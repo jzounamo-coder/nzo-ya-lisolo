@@ -10,8 +10,20 @@ import {
   Geography 
 } from 'react-simple-maps';
 
-// URL STABLE : Données des pays du monde (on filtrera pour l'Afrique)
+// URL STABLE : Données des pays du monde
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+// Mapping optionnel pour s'assurer que les noms correspondent à ta base Supabase
+const countryNameMapping: Record<string, string> = {
+  "Dem. Rep. Congo": "Congo",
+  "Congo": "Congo",
+  "South Africa": "Afrique du Sud",
+  "Ivory Coast": "Côte d'Ivoire",
+  "Morocco": "Maroc",
+  "Egypt": "Égypte",
+  "Senegal": "Sénégal",
+  "Algeria": "Algérie"
+};
 
 interface AfricaMapProps {
   onSelectCountry: (countryName: string) => void;
@@ -20,32 +32,34 @@ interface AfricaMapProps {
 export default function AfricaMap({ onSelectCountry }: AfricaMapProps) {
   return (
     <div className="bg-[#e0f2f1] border-3 border-brand-ink p-8 shadow-[12px_12px_0px_#1A1A1A] overflow-hidden relative min-h-[500px] flex flex-col">
-      {/* Correction : On force le titre au-dessus avec z-10 et relative */}
       <div className="relative z-10 mb-4">
         <h3 className="text-3xl font-serif font-black text-brand-earth tracking-tighter italic">Carte de la Sagesse</h3>
         <p className="text-brand-ink/70 text-xs font-bold uppercase tracking-widest mt-1">Explorez le continent ancestral.</p>
       </div>
 
-      {/* Ajustement : La carte est maintenant dans un conteneur qui respecte l'espace du titre */}
       <div className="w-full flex-1 flex items-center justify-center -mt-12">
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
             scale: 250,
-            center: [17, 0] // Centrage optimisé sur l'Afrique
+            center: [17, 0] 
           }}
           style={{ width: "100%", height: "auto" }}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo) => {
+                // Filtrer pour n'afficher que l'Afrique (Optionnel mais recommandé pour la clarté)
+                // Note: Dans ce JSON, les pays africains ont des propriétés spécifiques ou on peut filtrer par nom.
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     onClick={() => {
-                      const name = geo.properties.name;
-                      onSelectCountry(name);
+                      const rawName = geo.properties.name;
+                      // Utilise le nom mappé si dispo, sinon le nom brut
+                      const finalName = countryNameMapping[rawName] || rawName;
+                      onSelectCountry(finalName);
                     }}
                     style={{
                       default: {
