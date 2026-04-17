@@ -10,19 +10,29 @@ import {
   Geography 
 } from 'react-simple-maps';
 
-// URL STABLE : Données des pays du monde
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// URL STABLE : Données des pays du monde avec propriétés de continents
+const geoUrl = "https://raw.githubusercontent.com/lotusms/world-map-data/main/world.json";
 
-// Mapping optionnel pour s'assurer que les noms correspondent à ta base Supabase
+// Mapping pour s'assurer que les noms correspondent à ta base Supabase
 const countryNameMapping: Record<string, string> = {
-  "Dem. Rep. Congo": "Congo",
-  "Congo": "Congo",
+  "Democratic Republic of the Congo": "RDC",
+  "Republic of the Congo": "Congo",
   "South Africa": "Afrique du Sud",
   "Ivory Coast": "Côte d'Ivoire",
   "Morocco": "Maroc",
   "Egypt": "Égypte",
   "Senegal": "Sénégal",
-  "Algeria": "Algérie"
+  "Algeria": "Algérie",
+  "Nigeria": "Nigeria",
+  "Niger": "Niger",
+  "Mali": "Mali",
+  "Cameroon": "Cameroun",
+  "Gabon": "Gabon",
+  "Togo": "Togo",
+  "Benin": "Bénin",
+  "Burkina Faso": "Burkina Faso",
+  "Guinea": "Guinée",
+  "Chad": "Tchad"
 };
 
 interface AfricaMapProps {
@@ -41,23 +51,22 @@ export default function AfricaMap({ onSelectCountry }: AfricaMapProps) {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 250,
-            center: [17, 0] 
+            scale: 380,
+            center: [17, 2] 
           }}
           style={{ width: "100%", height: "auto" }}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
-              geographies.map((geo) => {
-                // Filtrer pour n'afficher que l'Afrique (Optionnel mais recommandé pour la clarté)
-                // Note: Dans ce JSON, les pays africains ont des propriétés spécifiques ou on peut filtrer par nom.
+              geographies
+                .filter(geo => geo.properties.continent === "Africa") // On ne garde que l'Afrique
+                .map((geo) => {
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     onClick={() => {
                       const rawName = geo.properties.name;
-                      // Utilise le nom mappé si dispo, sinon le nom brut
                       const finalName = countryNameMapping[rawName] || rawName;
                       onSelectCountry(finalName);
                     }}
