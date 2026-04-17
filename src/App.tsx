@@ -12,7 +12,7 @@ import ProverbCard from './components/ProverbCard';
 import VisualQuoteGenerator from './components/VisualQuoteGenerator';
 import LoginModal from './components/LoginModal';
 import Quiz from './components/Quiz';
-import { supabase } from './supabaseClient'; // Import de ton client configuré
+import { supabase } from './lib/supabase'; // Import de ton client configuré
 import { Sparkles, Plus, Languages, Baby, Heart, X, Quote, Music2, Instagram, Twitter, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
