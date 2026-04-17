@@ -293,26 +293,51 @@ export default function App() {
           </div>
         </section>
 
-        {/* SECTION 3 : CARTE D'AFRIQUE (LIGNE DE SCROLL RETIRÉE ICI) */}
+        {/* SECTION 3 : CARTE D'AFRIQUE (FOCUS DYNAMIQUE) */}
         <section id="map" className="max-w-7xl mx-auto px-4 py-16 pb-0">
           <div className="grid lg:grid-cols-[1fr_0.4fr] gap-8">
             <AfricaMap onSelectCountry={(country) => {
               setSelectedCountry(country);
               setDisplayLimit(9);
-              // LIGNE SUPPRIMÉE : document.getElementById('themes')?.scrollIntoView({ behavior: 'smooth' });
             }} />
             <div className="space-y-6 flex flex-col justify-center">
-              <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm">
+              <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm min-h-[300px] flex flex-col justify-center">
                 <div className="w-12 h-12 bg-brand-savannah border-2 border-brand-ink text-brand-ink flex items-center justify-center mb-4">
                   <Languages size={24} />
                 </div>
-                <h3 className="text-xl font-serif font-black italic mb-2">Focus sur: {selectedCountry}</h3>
-                <p className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-6">
-                  {selectedCountry === 'Afrique' 
-                    ? "Explorez le continent en cliquant sur un pays pour découvrir ses perles de sagesse locales."
-                    : `Découvrez la richesse linguistique et culturelle du ${selectedCountry} à travers ses proverbes ancestraux.`}
-                </p>
+                <h3 className="text-xl font-serif font-black italic mb-4">Focus sur: {selectedCountry}</h3>
+                
+                <div className="space-y-4">
+                  {selectedCountry === 'Afrique' ? (
+                    <p className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed">
+                      Explorez le continent en cliquant sur un pays pour découvrir ses perles de sagesse locales.
+                    </p>
+                  ) : (
+                    (() => {
+                      const dataPool = (proverbs && proverbs.length > 0) ? proverbs : (MOCK_PROVERBS as any[]);
+                      const countryProverb = dataPool.find(p => 
+                        (p.origin || p.originCountryName || "").toLowerCase() === selectedCountry.toLowerCase()
+                      );
+
+                      return countryProverb ? (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                          <p className="text-lg font-serif font-black italic text-brand-ink mb-2 leading-tight">
+                            "{countryProverb.text}"
+                          </p>
+                          <p className="text-brand-clay text-[10px] font-black uppercase tracking-widest">
+                            Sens : {countryProverb.translation}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed italic">
+                          Pas encore de proverbe répertorié pour ce pays. Soyez le premier à en ajouter un !
+                        </p>
+                      );
+                    })()
+                  )}
+                </div>
               </div>
+
               <div onClick={() => triggerLogin("Connecte-toi pour voter pour des proverbes !")} className="p-10 bg-brand-ink text-white border-3 border-brand-ink flex flex-col items-center text-center cursor-pointer hover:bg-stone-800 transition-all shadow-[8px_8px_0px_#B2513B]">
                   <Plus size={40} className="mb-4 text-brand-savannah" />
                   <h4 className="text-xs font-black uppercase tracking-widest leading-none">Ajouter une Sagesse</h4>
