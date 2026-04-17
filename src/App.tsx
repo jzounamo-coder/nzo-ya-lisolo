@@ -13,15 +13,11 @@ import VisualQuoteGenerator from './components/VisualQuoteGenerator';
 import LoginModal from './components/LoginModal';
 import Quiz from './components/Quiz';
 import { MOCK_PROVERBS } from './constants';
-import { useProverbs } from './hooks/useProverbs'; // --- AJOUT DU HOOK ---
-import { Sparkles, Plus, Languages, Baby, Heart, X, Quote, Music2, Instagram, Twitter, ChevronRight, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { Sparkles, Plus, Languages, Baby, Heart, X, Quote, Music2, Instagram, Twitter, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
 export default function App() {
-  // --- RÉCUPÉRATION DES DONNÉES SUPABASE ---
-  const { proverbs, loading: isLoadingProverbs } = useProverbs();
-
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('Afrique');
@@ -110,38 +106,34 @@ export default function App() {
     }
   };
 
-  // --- LOGIQUE DE FILTRAGE MISE À JOUR POUR SUPABASE ---
+  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (THÈME + RECHERCHE) ---
   const filteredProverbs = useMemo(() => {
-    // On utilise les proverbes de Supabase s'ils sont chargés, sinon le Mock par sécurité
-    const dataSource = proverbs.length > 0 ? proverbs : (MOCK_PROVERBS as any[]);
-    
     let result = activeTab === 'kids' 
-      ? dataSource.filter(p => p.isKidFriendly || p.category === 'Enfants')
-      : dataSource;
+      ? (MOCK_PROVERBS as any[]).filter(p => p.isKidFriendly)
+      : (MOCK_PROVERBS as any[]);
 
     if (selectedTheme) {
-      result = result.filter(p => (p.themeId === selectedTheme || p.category === selectedTheme));
+      result = result.filter(p => p.themeId === selectedTheme);
     }
 
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => 
         p.text.toLowerCase().includes(q) || 
-        (p.translation && p.translation.toLowerCase().includes(q)) ||
-        (p.origin && p.origin.toLowerCase().includes(q))
+        p.translation.toLowerCase().includes(q) ||
+        p.themeId.toLowerCase().includes(q)
       );
     }
 
     return result;
-  }, [proverbs, activeTab, selectedTheme, searchQuery]);
+  }, [activeTab, selectedTheme, searchQuery]);
 
   const visibleProverbs = useMemo(() => {
     return filteredProverbs.slice(0, displayLimit);
   }, [filteredProverbs, displayLimit]);
 
   const handleRandom = () => {
-    const dataSource = proverbs.length > 0 ? proverbs : MOCK_PROVERBS;
-    const random = dataSource[Math.floor(Math.random() * dataSource.length)];
+    const random = MOCK_PROVERBS[Math.floor(Math.random() * MOCK_PROVERBS.length)];
     setRandomProverb(random);
   };
 
@@ -233,12 +225,7 @@ export default function App() {
             </div>
 
             <AnimatePresence mode="wait">
-              {isLoadingProverbs ? (
-                <div className="flex flex-col items-center py-20 gap-4">
-                   <Loader2 className="animate-spin text-brand-clay" size={40} />
-                   <p className="text-[10px] font-black uppercase tracking-widest">Récupération des sagesses...</p>
-                </div>
-              ) : visibleProverbs.length > 0 ? (
+              {visibleProverbs.length > 0 ? (
                 <motion.div 
                   key={`${activeTab}-${selectedTheme}-${displayLimit}-${searchQuery}`} 
                   initial={{ opacity: 0, y: 10 }} 
@@ -247,15 +234,7 @@ export default function App() {
                   className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
                   {visibleProverbs.map((p: any) => (
-                    <ProverbCard 
-                      key={p.id} 
-                      proverb={{
-                        ...p,
-                        originCountryName: p.origin || p.originCountryName,
-                        themeId: p.category || p.themeId
-                      }} 
-                      onLike={() => triggerLogin("Liker !")} 
-                    />
+                    <ProverbCard key={p.id} proverb={p} onLike={() => triggerLogin("Liker !")} />
                   ))}
                 </motion.div>
               ) : (
@@ -269,10 +248,10 @@ export default function App() {
             {displayLimit < filteredProverbs.length && (
               <div className="mt-16 text-center">
                 <button 
-                  onClick={() => setDisplayLimit(prev => prev + 9)}
+                  onClick={() => setDisplayLimit(filteredProverbs.length)}
                   className="group relative inline-flex items-center gap-3 px-12 py-5 bg-white border-3 border-brand-ink text-brand-ink font-black uppercase tracking-[0.2em] text-xs hover:bg-brand-savannah transition-all brutal-shadow"
                 >
-                  Découvrir plus de sagesses
+                  Découvrir toute la bibliothèque
                   <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -335,7 +314,7 @@ export default function App() {
                   <motion.div key="kids-quiz" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="bg-white rounded-3xl p-2 shadow-[20px_20px_0px_#E2A745] text-brand-ink"><Quiz /></motion.div>
                 ) : activeTab === 'kids' ? (
                   <motion.div key="kids-proverbs" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="grid md:grid-cols-3 gap-8">
-                    {filteredProverbs.filter(p => p.isKidFriendly || p.category === 'Enfants').slice(0, 3).map((p: any) => (
+                    {MOCK_PROVERBS.filter(p => p.isKidFriendly).slice(0, 3).map((p: any) => (
                       <div key={p.id} className="bg-white text-brand-ink p-8 border-3 border-brand-ink shadow-[8px_8px_0px_#E2A745] flex flex-col justify-center min-h-[250px]">
                         <Quote className="text-brand-savannah mb-4" size={32} fill="currentColor" />
                         <h4 className="text-xl font-serif font-black italic mb-4 leading-tight">"{p.text}"</h4>
@@ -403,8 +382,8 @@ export default function App() {
               <div className="text-brand-savannah mb-6"><Quote size={48} fill="currentColor" /></div>
               <div className="space-y-6">
                 <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-brand-ink text-white text-[10px] font-black uppercase tracking-widest">{randomProverb.themeId || randomProverb.category}</span>
-                  <span className="px-3 py-1 border-2 border-brand-ink text-brand-ink text-[10px] font-black uppercase tracking-widest">{randomProverb.originCountryName || randomProverb.origin}</span>
+                  <span className="px-3 py-1 bg-brand-ink text-white text-[10px] font-black uppercase tracking-widest">{randomProverb.themeId}</span>
+                  <span className="px-3 py-1 border-2 border-brand-ink text-brand-ink text-[10px] font-black uppercase tracking-widest">{randomProverb.originCountryName}</span>
                 </div>
                 <h3 className="text-3xl md:text-5xl font-serif font-black italic text-brand-ink leading-tight">"{randomProverb.text}"</h3>
                 <div className="pt-6 border-t-2 border-brand-ink/10">
