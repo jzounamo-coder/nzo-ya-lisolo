@@ -110,31 +110,19 @@ export default function App() {
     }
   };
 
-  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (THÈME + RECHERCHE + PAYS) ---
+  // --- LOGIQUE DE FILTRAGE MISE À JOUR POUR SUPABASE ---
   const filteredProverbs = useMemo(() => {
+    // On utilise les proverbes de Supabase s'ils sont chargés, sinon le Mock par sécurité
     const dataSource = proverbs.length > 0 ? proverbs : (MOCK_PROVERBS as any[]);
     
-    let result = dataSource;
+    let result = activeTab === 'kids' 
+      ? dataSource.filter(p => p.isKidFriendly || p.category === 'Enfants')
+      : dataSource;
 
-    // 1. Filtre par Onglet (Enfants)
-    if (activeTab === 'kids') {
-      result = result.filter(p => p.isKidFriendly || p.category === 'Enfants');
-    }
-
-    // 2. Filtre par Thème
     if (selectedTheme) {
       result = result.filter(p => (p.themeId === selectedTheme || p.category === selectedTheme));
     }
 
-    // 3. Filtre par Pays (Carte)
-    if (selectedCountry && selectedCountry !== 'Afrique') {
-      result = result.filter(p => {
-        const countrySource = p.origin || p.originCountryName || "";
-        return countrySource.toLowerCase() === selectedCountry.toLowerCase();
-      });
-    }
-
-    // 4. Filtre par Recherche
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => 
@@ -145,7 +133,7 @@ export default function App() {
     }
 
     return result;
-  }, [proverbs, activeTab, selectedTheme, selectedCountry, searchQuery]);
+  }, [proverbs, activeTab, selectedTheme, searchQuery]);
 
   const visibleProverbs = useMemo(() => {
     return filteredProverbs.slice(0, displayLimit);
@@ -197,12 +185,11 @@ export default function App() {
               {selectedTheme ? `Thème : ${selectedTheme}` : "Sagesses par Thèmes"}
             </h2>
             <div className="w-24 h-[3px] bg-brand-clay mx-auto" />
-            {(selectedTheme || searchQuery || selectedCountry !== 'Afrique') && (
+            {(selectedTheme || searchQuery) && (
               <button 
                 onClick={() => {
                   setSelectedTheme(null);
                   setSearchQuery('');
-                  setSelectedCountry('Afrique');
                   setDisplayLimit(9);
                 }}
                 className="text-[10px] font-black uppercase text-brand-clay mt-4 hover:underline"
@@ -223,7 +210,7 @@ export default function App() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10 px-4">
               <div className="space-y-2">
                 <h2 className="text-4xl font-serif font-black italic text-brand-ink">
-                  Perles de Sagesse {selectedCountry !== 'Afrique' && `(${selectedCountry})`}
+                  Perles de Sagesse
                 </h2>
                 <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-stone-600">
                   <button 
@@ -253,7 +240,7 @@ export default function App() {
                 </div>
               ) : visibleProverbs.length > 0 ? (
                 <motion.div 
-                  key={`${activeTab}-${selectedTheme}-${displayLimit}-${searchQuery}-${selectedCountry}`} 
+                  key={`${activeTab}-${selectedTheme}-${displayLimit}-${searchQuery}`} 
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0 }} 
@@ -273,8 +260,8 @@ export default function App() {
                 </motion.div>
               ) : (
                 <div className="text-center py-20 bg-white/60 border-4 border-dashed border-white rounded-3xl backdrop-blur-md">
-                  <p className="text-xl font-serif italic text-brand-ink/60 mb-4">Aucune sagesse ne correspond à votre sélection...</p>
-                  <button onClick={() => { setSearchQuery(''); setSelectedCountry('Afrique'); }} className="text-xs font-black uppercase text-brand-clay underline">Réinitialiser</button>
+                  <p className="text-xl font-serif italic text-brand-ink/60 mb-4">Aucune sagesse ne correspond à votre recherche...</p>
+                  <button onClick={() => setSearchQuery('')} className="text-xs font-black uppercase text-brand-clay underline">Effacer la recherche</button>
                 </div>
               )}
             </AnimatePresence>
@@ -296,11 +283,7 @@ export default function App() {
         {/* SECTION 3 : CARTE D'AFRIQUE */}
         <section id="map" className="max-w-7xl mx-auto px-4 py-16 pb-0">
           <div className="grid lg:grid-cols-[1fr_0.4fr] gap-8">
-            <AfricaMap onSelectCountry={(country) => {
-              setSelectedCountry(country);
-              setDisplayLimit(9);
-              document.getElementById('themes')?.scrollIntoView({ behavior: 'smooth' });
-            }} />
+            <AfricaMap onSelectCountry={setSelectedCountry} />
             <div className="space-y-6 flex flex-col justify-center">
               <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm">
                 <div className="w-12 h-12 bg-brand-savannah border-2 border-brand-ink text-brand-ink flex items-center justify-center mb-4">
