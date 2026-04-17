@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase'; // Import de ton client supabase
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
-// Définition de ce qu'est un utilisateur
+// Définition de ce qu'est un utilisateur pour ton interface
 interface User {
   name: string;
   email: string;
@@ -9,49 +11,76 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string) => void;
-  logout: () => void;
+  login: (email: string, password?: string) => Promise<void>; // Devient asynchrone
+  logout: () => Promise<void>; // Devient asynchrone
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Au chargement, on regarde si l'utilisateur était déjà connecté (dans le localStorage)
-  useEffect(() => {
-    const savedUser = localStorage.getItem('nzo_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  const login = (email: string) => {
-    // On simule une création de profil à partir de l'email
-    const nameFromEmail = email.split('@')[0];
-    const newUser = { 
-      name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), 
-      email, 
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameFromEmail}` 
+  // Fonction pour transformer un utilisateur Supabase en ton format User
+  const formatUser = (supabaseUser: SupabaseUser | null): User | null => {
+    if (!supabaseUser) return null;
+    const nameFromEmail = supabaseUser.email?.split('@')[0] || 'Voyageur';
+    return {
+      name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1),
+      email: supabaseUser.email || '',
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameFromEmail}`
     };
-    setUser(newUser);
-    localStorage.setItem('nzo_user', JSON.stringify(newUser));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('nzo_user');
+  useEffect(() => {
+    // 1. Vérifier la session actuelle au démarrage
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(formatUser(session?.user ?? null));
+      setLoading(false);
+    });
+
+    // 2. Écouter les changements de connexion (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(formatUser(session?.user ?? null));
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Connexion via Magic Link (plus simple sans mot de passe)
+  const login = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    
+    if (error) throw error;
+    alert("Lien magique envoyé ! Vérifie tes e-mails.");
+  };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error("Erreur déconnexion:", error.message);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
-      {children}
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      isAuthenticated: !!user,
+      loading 
+    }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
 
-// Le "Hook" pour utiliser l'auth partout facilement
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth doit être utilisé dans un AuthProvider");

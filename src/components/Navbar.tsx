@@ -30,6 +30,17 @@ export default function Navbar({ onSInscrire, onConnexion, searchQuery, onSearch
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fonction pour gérer la déconnexion proprement
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setShowProfileMenu(false);
+      setIsMenuOpen(false);
+    } catch (error) {
+      console.error("Erreur déconnexion:", error);
+    }
+  };
+
   const navLinks = [
     { name: 'Explorer', icon: MapIcon, href: '#map' },
     { name: 'Thèmes', icon: BookOpen, href: '#themes' },
@@ -104,7 +115,7 @@ export default function Navbar({ onSInscrire, onConnexion, searchQuery, onSearch
                       <User size={16} /> Mon Profil
                     </button>
                     <button 
-                      onClick={() => { logout(); setShowProfileMenu(false); }}
+                      onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <LogOut size={16} /> Déconnexion
@@ -157,7 +168,7 @@ export default function Navbar({ onSInscrire, onConnexion, searchQuery, onSearch
               <div className="pt-4 flex flex-col gap-3">
                 {isAuthenticated ? (
                   <button 
-                    onClick={() => { logout(); setIsMenuOpen(false); }}
+                    onClick={handleLogout}
                     className="flex items-center justify-center gap-2 bg-red-50 text-red-500 py-4 border-2 border-red-500 font-bold uppercase tracking-widest"
                   >
                     <LogOut size={20} />
