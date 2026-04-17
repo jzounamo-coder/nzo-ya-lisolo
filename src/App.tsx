@@ -12,7 +12,7 @@ import ProverbCard from './components/ProverbCard';
 import VisualQuoteGenerator from './components/VisualQuoteGenerator';
 import LoginModal from './components/LoginModal';
 import Quiz from './components/Quiz';
-import { supabase } from './lib/supabase'; // Import de ton client configuré
+import { MOCK_PROVERBS } from './constants';
 import { Sparkles, Plus, Languages, Baby, Heart, X, Quote, Music2, Instagram, Twitter, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
@@ -25,10 +25,6 @@ export default function App() {
   const [selectedTheme, setSelectedTheme] = useState<any>(null);
   const [randomProverb, setRandomProverb] = useState<any>(null);
   
-  // --- ÉTAT DES DONNÉES SUPABASE ---
-  const [proverbs, setProverbs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
   // --- ÉTAT DE RECHERCHE ---
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -42,25 +38,6 @@ export default function App() {
 
   // --- ÉTAT POUR LES MODALES DU FOOTER ---
   const [activeFooterModal, setActiveFooterModal] = useState<string | null>(null);
-
-  // --- RÉCUPÉRATION DES DONNÉES DEPUIS SUPABASE ---
-  useEffect(() => {
-    const fetchProverbs = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('proverbs') // Assure-toi que le nom de ta table est bien 'proverbs'
-        .select('*');
-
-      if (error) {
-        console.error("Erreur Supabase:", error.message);
-      } else if (data) {
-        setProverbs(data);
-      }
-      setLoading(false);
-    };
-
-    fetchProverbs();
-  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -129,53 +106,35 @@ export default function App() {
     }
   };
 
-  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (Utilise maintenant 'proverbs' de Supabase) ---
+  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (THÈME + RECHERCHE) ---
   const filteredProverbs = useMemo(() => {
     let result = activeTab === 'kids' 
-      ? proverbs.filter(p => p.isKidFriendly)
-      : proverbs;
+      ? (MOCK_PROVERBS as any[]).filter(p => p.isKidFriendly)
+      : (MOCK_PROVERBS as any[]);
 
     if (selectedTheme) {
-      // Ajuste 'category' si ta colonne Supabase s'appelle autrement
-      result = result.filter(p => p.category === selectedTheme || p.themeId === selectedTheme);
-    }
-
-    // Filtre par pays (colonne 'origin' selon ta capture d'écran)
-    if (selectedCountry !== 'Afrique') {
-      result = result.filter(p => 
-        (p.origin || "").trim().toLowerCase() === selectedCountry.toLowerCase()
-      );
+      result = result.filter(p => p.themeId === selectedTheme);
     }
 
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => 
-        p.text?.toLowerCase().includes(q) || 
-        p.translation?.toLowerCase().includes(q) ||
-        p.origin?.toLowerCase().includes(q)
+        p.text.toLowerCase().includes(q) || 
+        p.translation.toLowerCase().includes(q) ||
+        p.themeId.toLowerCase().includes(q)
       );
     }
 
     return result;
-  }, [activeTab, selectedTheme, searchQuery, selectedCountry, proverbs]);
-
-  // --- PROVERBE À AFFICHER DANS L'ENCART FOCUS ---
-  const countryFocusProverb = useMemo(() => {
-    if (selectedCountry === 'Afrique') return null;
-    return proverbs.find(p => 
-      (p.origin || "").trim().toLowerCase() === selectedCountry.toLowerCase()
-    );
-  }, [selectedCountry, proverbs]);
+  }, [activeTab, selectedTheme, searchQuery]);
 
   const visibleProverbs = useMemo(() => {
     return filteredProverbs.slice(0, displayLimit);
   }, [filteredProverbs, displayLimit]);
 
   const handleRandom = () => {
-    if (proverbs.length > 0) {
-      const random = proverbs[Math.floor(Math.random() * proverbs.length)];
-      setRandomProverb(random);
-    }
+    const random = MOCK_PROVERBS[Math.floor(Math.random() * MOCK_PROVERBS.length)];
+    setRandomProverb(random);
   };
 
   return (
@@ -218,12 +177,11 @@ export default function App() {
               {selectedTheme ? `Thème : ${selectedTheme}` : "Sagesses par Thèmes"}
             </h2>
             <div className="w-24 h-[3px] bg-brand-clay mx-auto" />
-            {(selectedTheme || searchQuery || selectedCountry !== 'Afrique') && (
+            {(selectedTheme || searchQuery) && (
               <button 
                 onClick={() => {
                   setSelectedTheme(null);
                   setSearchQuery('');
-                  setSelectedCountry('Afrique');
                   setDisplayLimit(9);
                 }}
                 className="text-[10px] font-black uppercase text-brand-clay mt-4 hover:underline"
@@ -244,7 +202,7 @@ export default function App() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10 px-4">
               <div className="space-y-2">
                 <h2 className="text-4xl font-serif font-black italic text-brand-ink">
-                  Perles de Sagesse {selectedCountry !== 'Afrique' && `(${selectedCountry})`}
+                  Perles de Sagesse
                 </h2>
                 <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-stone-600">
                   <button 
@@ -267,11 +225,9 @@ export default function App() {
             </div>
 
             <AnimatePresence mode="wait">
-              {loading ? (
-                <div className="text-center py-20 font-black uppercase tracking-widest text-brand-clay">Chargement de la sagesse...</div>
-              ) : visibleProverbs.length > 0 ? (
+              {visibleProverbs.length > 0 ? (
                 <motion.div 
-                  key={`${activeTab}-${selectedTheme}-${displayLimit}-${searchQuery}-${selectedCountry}`} 
+                  key={`${activeTab}-${selectedTheme}-${displayLimit}-${searchQuery}`} 
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0 }} 
@@ -284,12 +240,12 @@ export default function App() {
               ) : (
                 <div className="text-center py-20 bg-white/60 border-4 border-dashed border-white rounded-3xl backdrop-blur-md">
                   <p className="text-xl font-serif italic text-brand-ink/60 mb-4">Aucune sagesse ne correspond à votre recherche...</p>
-                  <button onClick={() => {setSearchQuery(''); setSelectedCountry('Afrique');}} className="text-xs font-black uppercase text-brand-clay underline">Effacer la recherche</button>
+                  <button onClick={() => setSearchQuery('')} className="text-xs font-black uppercase text-brand-clay underline">Effacer la recherche</button>
                 </div>
               )}
             </AnimatePresence>
 
-            {!loading && displayLimit < filteredProverbs.length && (
+            {displayLimit < filteredProverbs.length && (
               <div className="mt-16 text-center">
                 <button 
                   onClick={() => setDisplayLimit(filteredProverbs.length)}
@@ -303,56 +259,21 @@ export default function App() {
           </div>
         </section>
 
-        {/* SECTION 3 : CARTE D'AFRIQUE INTERACTIVE */}
+        {/* SECTION 3 : CARTE D'AFRIQUE */}
         <section id="map" className="max-w-7xl mx-auto px-4 py-16 pb-0">
           <div className="grid lg:grid-cols-[1fr_0.4fr] gap-8">
-            <AfricaMap onSelectCountry={(country) => {
-              setSelectedCountry(country);
-              setDisplayLimit(9);
-            }} />
+            <AfricaMap onSelectCountry={setSelectedCountry} />
             <div className="space-y-6 flex flex-col justify-center">
-              <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm min-h-[300px] flex flex-col justify-center">
+              <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm">
                 <div className="w-12 h-12 bg-brand-savannah border-2 border-brand-ink text-brand-ink flex items-center justify-center mb-4">
                   <Languages size={24} />
                 </div>
                 <h3 className="text-xl font-serif font-black italic mb-2">Focus sur: {selectedCountry}</h3>
-                
-                <AnimatePresence mode="wait">
-                  {selectedCountry === 'Afrique' ? (
-                    <motion.p 
-                      key="default"
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed"
-                    >
-                      Explorez le continent en cliquant sur un pays pour découvrir ses perles de sagesse locales.
-                    </motion.p>
-                  ) : countryFocusProverb ? (
-                    <motion.div 
-                      key={countryFocusProverb.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-4"
-                    >
-                      <p className="text-2xl font-serif font-black italic text-brand-ink leading-tight">
-                        "{countryFocusProverb.text}"
-                      </p>
-                      <div className="pt-4 border-t border-brand-ink/10">
-                        <p className="text-[10px] font-black uppercase text-brand-clay mb-1">Traduction & Sens :</p>
-                        <p className="text-sm font-medium italic text-brand-ink/70">
-                          {countryFocusProverb.translation}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.p 
-                      key="none"
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="text-stone-400 text-[10px] font-bold uppercase italic"
-                    >
-                      Nous n'avons pas encore de proverbe répertorié pour ce pays. Soyez le premier à en ajouter un !
-                    </motion.p>
-                  )}
-                </AnimatePresence>
+                <p className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-6">
+                  {selectedCountry === 'Afrique' 
+                    ? "Explorez le continent en cliquant sur un pays pour découvrir ses perles de sagesse locales."
+                    : `Découvrez la richesse linguistique et culturelle du ${selectedCountry} à travers ses proverbes ancestraux.`}
+                </p>
               </div>
               <div onClick={() => triggerLogin("Connecte-toi pour voter pour des proverbes !")} className="p-10 bg-brand-ink text-white border-3 border-brand-ink flex flex-col items-center text-center cursor-pointer hover:bg-stone-800 transition-all shadow-[8px_8px_0px_#B2513B]">
                   <Plus size={40} className="mb-4 text-brand-savannah" />
@@ -365,7 +286,7 @@ export default function App() {
 
         {/* GENERATEUR */}
         <section id="generator" className="max-w-7xl mx-auto px-4 py-16">
-          <VisualQuoteGenerator proverb={filteredProverbs[0] || proverbs[0]} />
+          <VisualQuoteGenerator proverb={filteredProverbs[0] || MOCK_PROVERBS[0]} />
         </section>
 
         {/* SECTION 4 : LE COIN DES ENFANTS */}
@@ -393,7 +314,7 @@ export default function App() {
                   <motion.div key="kids-quiz" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="bg-white rounded-3xl p-2 shadow-[20px_20px_0px_#E2A745] text-brand-ink"><Quiz /></motion.div>
                 ) : activeTab === 'kids' ? (
                   <motion.div key="kids-proverbs" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="grid md:grid-cols-3 gap-8">
-                    {proverbs.filter(p => p.isKidFriendly).slice(0, 3).map((p: any) => (
+                    {MOCK_PROVERBS.filter(p => p.isKidFriendly).slice(0, 3).map((p: any) => (
                       <div key={p.id} className="bg-white text-brand-ink p-8 border-3 border-brand-ink shadow-[8px_8px_0px_#E2A745] flex flex-col justify-center min-h-[250px]">
                         <Quote className="text-brand-savannah mb-4" size={32} fill="currentColor" />
                         <h4 className="text-xl font-serif font-black italic mb-4 leading-tight">"{p.text}"</h4>
@@ -461,8 +382,8 @@ export default function App() {
               <div className="text-brand-savannah mb-6"><Quote size={48} fill="currentColor" /></div>
               <div className="space-y-6">
                 <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-brand-ink text-white text-[10px] font-black uppercase tracking-widest">{randomProverb.category || randomProverb.themeId}</span>
-                  <span className="px-3 py-1 border-2 border-brand-ink text-brand-ink text-[10px] font-black uppercase tracking-widest">{randomProverb.origin}</span>
+                  <span className="px-3 py-1 bg-brand-ink text-white text-[10px] font-black uppercase tracking-widest">{randomProverb.themeId}</span>
+                  <span className="px-3 py-1 border-2 border-brand-ink text-brand-ink text-[10px] font-black uppercase tracking-widest">{randomProverb.originCountryName}</span>
                 </div>
                 <h3 className="text-3xl md:text-5xl font-serif font-black italic text-brand-ink leading-tight">"{randomProverb.text}"</h3>
                 <div className="pt-6 border-t-2 border-brand-ink/10">
