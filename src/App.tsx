@@ -106,7 +106,7 @@ export default function App() {
     }
   };
 
-  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (THÈME + RECHERCHE) ---
+  // --- LOGIQUE DE FILTRAGE (On retire selectedCountry d'ici pour ne plus filtrer la liste via la carte) ---
   const filteredProverbs = useMemo(() => {
     let result = activeTab === 'kids' 
       ? (MOCK_PROVERBS as any[]).filter(p => p.isKidFriendly)
@@ -262,7 +262,8 @@ export default function App() {
         {/* SECTION 3 : CARTE D'AFRIQUE */}
         <section id="map" className="max-w-7xl mx-auto px-4 py-16 pb-0">
           <div className="grid lg:grid-cols-[1fr_0.4fr] gap-8">
-            <AfricaMap onSelectCountry={setSelectedCountry} />
+            {/* L'action onSelectCountry met à jour l'info de la carte mais ne touche plus à la liste des proverbes */}
+            <AfricaMap onSelectCountry={(country) => setSelectedCountry(country)} />
             <div className="space-y-6 flex flex-col justify-center">
               <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm">
                 <div className="w-12 h-12 bg-brand-savannah border-2 border-brand-ink text-brand-ink flex items-center justify-center mb-4">

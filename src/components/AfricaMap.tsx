@@ -10,19 +10,20 @@ import {
   Geography 
 } from 'react-simple-maps';
 
-// URL STABLE : Données des pays du monde
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// Cette URL est plus riche en propriétés (noms, continents)
+const geoUrl = "https://raw.githubusercontent.com/lotusms/world-map-data/main/world.json";
 
-// Mapping optionnel pour s'assurer que les noms correspondent à ta base Supabase
 const countryNameMapping: Record<string, string> = {
-  "Dem. Rep. Congo": "Congo",
-  "Congo": "Congo",
+  "Democratic Republic of the Congo": "RDC",
+  "Republic of the Congo": "Congo",
   "South Africa": "Afrique du Sud",
   "Ivory Coast": "Côte d'Ivoire",
   "Morocco": "Maroc",
   "Egypt": "Égypte",
   "Senegal": "Sénégal",
-  "Algeria": "Algérie"
+  "Algeria": "Algérie",
+  "Nigeria": "Nigeria",
+  "Tanzania": "Tanzanie"
 };
 
 interface AfricaMapProps {
@@ -41,48 +42,48 @@ export default function AfricaMap({ onSelectCountry }: AfricaMapProps) {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 250,
-            center: [17, 0] 
+            scale: 350, // Augmenté pour que l'Afrique prenne bien toute la place
+            center: [17, 2] // Ajusté pour centrer parfaitement le continent
           }}
           style={{ width: "100%", height: "auto" }}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
-              geographies.map((geo) => {
-                // Filtrer pour n'afficher que l'Afrique (Optionnel mais recommandé pour la clarté)
-                // Note: Dans ce JSON, les pays africains ont des propriétés spécifiques ou on peut filtrer par nom.
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    onClick={() => {
-                      const rawName = geo.properties.name;
-                      // Utilise le nom mappé si dispo, sinon le nom brut
-                      const finalName = countryNameMapping[rawName] || rawName;
-                      onSelectCountry(finalName);
-                    }}
-                    style={{
-                      default: {
-                        fill: "#F5F5F0",
-                        stroke: "#1A1A1A",
-                        strokeWidth: 0.5,
-                        outline: "none",
-                      },
-                      hover: {
-                        fill: "#E2A745",
-                        stroke: "#1A1A1A",
-                        strokeWidth: 1,
-                        outline: "none",
-                        cursor: "pointer"
-                      },
-                      pressed: {
-                        fill: "#B2513B",
-                        outline: "none",
-                      },
-                    }}
-                  />
-                )
-              })
+              geographies
+                // TRÈS IMPORTANT : On filtre pour n'afficher QUE l'Afrique
+                .filter(geo => geo.properties.continent === "Africa")
+                .map((geo) => {
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      onClick={() => {
+                        const rawName = geo.properties.name;
+                        const finalName = countryNameMapping[rawName] || rawName;
+                        onSelectCountry(finalName);
+                      }}
+                      style={{
+                        default: {
+                          fill: "#F5F5F0",
+                          stroke: "#1A1A1A",
+                          strokeWidth: 0.5,
+                          outline: "none",
+                        },
+                        hover: {
+                          fill: "#E2A745",
+                          stroke: "#1A1A1A",
+                          strokeWidth: 1,
+                          outline: "none",
+                          cursor: "pointer"
+                        },
+                        pressed: {
+                          fill: "#B2513B",
+                          outline: "none",
+                        },
+                      }}
+                    />
+                  )
+                })
             }
           </Geographies>
         </ComposableMap>
