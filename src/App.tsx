@@ -25,11 +25,18 @@ export default function App() {
   const [selectedTheme, setSelectedTheme] = useState<any>(null);
   const [randomProverb, setRandomProverb] = useState<any>(null);
   
+  // --- ÉTAT DE RECHERCHE ---
   const [searchQuery, setSearchQuery] = useState('');
+
+  // --- ÉTAT AUDIO ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false); 
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // --- ÉTAT POUR LA LIMITE D'AFFICHAGE ---
   const [displayLimit, setDisplayLimit] = useState(9);
+
+  // --- ÉTAT POUR LES MODALES DU FOOTER ---
   const [activeFooterModal, setActiveFooterModal] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,6 +66,7 @@ export default function App() {
 
   const toggleMusic = (e: React.MouseEvent) => {
     e.stopPropagation(); 
+    
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -98,7 +106,7 @@ export default function App() {
     }
   };
 
-  // --- LOGIQUE DE FILTRAGE ---
+  // --- LOGIQUE DE FILTRAGE AMÉLIORÉE (THÈME + RECHERCHE + PAYS) ---
   const filteredProverbs = useMemo(() => {
     let result = activeTab === 'kids' 
       ? (MOCK_PROVERBS as any[]).filter(p => p.isKidFriendly)
@@ -108,7 +116,7 @@ export default function App() {
       result = result.filter(p => p.themeId === selectedTheme);
     }
 
-    // Filtrage par pays si un pays est sélectionné
+    // Filtre par pays si un pays spécifique est sélectionné
     if (selectedCountry !== 'Afrique') {
       result = result.filter(p => 
         (p.originCountryName || "").toLowerCase() === selectedCountry.toLowerCase()
@@ -127,7 +135,7 @@ export default function App() {
     return result;
   }, [activeTab, selectedTheme, searchQuery, selectedCountry]);
 
-  // --- NOUVEAUTÉ : TROUVER LE PROVERBE À AFFICHER DANS LE FOCUS CARTE ---
+  // --- PROVERBE À AFFICHER DANS L'ENCART FOCUS ---
   const countryFocusProverb = useMemo(() => {
     if (selectedCountry === 'Afrique') return null;
     return (MOCK_PROVERBS as any[]).find(p => 
@@ -146,6 +154,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen overflow-x-hidden font-sans text-brand-earth relative">
+      
+      {/* BACKGROUND AFRICAIN - HAUTE VISIBILITÉ */}
       <div 
         className="fixed inset-0 z-[-1] bg-cover bg-center bg-fixed"
         style={{ 
@@ -175,6 +185,7 @@ export default function App() {
           selectedTheme={selectedTheme}
         />
 
+        {/* SECTION 1 : THÈMES */}
         <section id="themes" className="max-w-7xl mx-auto px-4 py-16 bg-white/10 backdrop-blur-[1px] my-8 rounded-3xl">
           <div className="text-center mb-12 space-y-3">
             <h2 className="text-4xl font-serif font-black italic tracking-tighter text-brand-ink">
@@ -201,6 +212,7 @@ export default function App() {
           }} />
         </section>
 
+        {/* SECTION 2 : PERLES DE SAGESSE */}
         <section className="py-12 bg-white/30 backdrop-blur-sm border-y border-white/20">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10 px-4">
@@ -268,9 +280,8 @@ export default function App() {
           <div className="grid lg:grid-cols-[1fr_0.4fr] gap-8">
             <AfricaMap onSelectCountry={(country) => {
               setSelectedCountry(country);
-              setDisplayLimit(9); // Réinitialise la limite pour voir les proverbes du pays
+              setDisplayLimit(9);
             }} />
-            
             <div className="space-y-6 flex flex-col justify-center">
               <div className="p-10 bg-white/90 border-3 border-brand-ink shadow-[8px_8px_0px_#1A1A1A] backdrop-blur-sm min-h-[300px] flex flex-col justify-center">
                 <div className="w-12 h-12 bg-brand-savannah border-2 border-brand-ink text-brand-ink flex items-center justify-center mb-4">
@@ -282,8 +293,7 @@ export default function App() {
                   {selectedCountry === 'Afrique' ? (
                     <motion.p 
                       key="default"
-                      initial={{ opacity: 0 }} 
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       className="text-brand-ink/70 text-[11px] font-bold uppercase tracking-widest leading-relaxed"
                     >
                       Explorez le continent en cliquant sur un pays pour découvrir ses perles de sagesse locales.
@@ -299,7 +309,7 @@ export default function App() {
                         "{countryFocusProverb.text}"
                       </p>
                       <div className="pt-4 border-t border-brand-ink/10">
-                        <p className="text-[10px] font-black uppercase text-brand-clay mb-1">Signification :</p>
+                        <p className="text-[10px] font-black uppercase text-brand-clay mb-1">Traduction & Sens :</p>
                         <p className="text-sm font-medium italic text-brand-ink/70">
                           {countryFocusProverb.translation}
                         </p>
@@ -308,16 +318,14 @@ export default function App() {
                   ) : (
                     <motion.p 
                       key="none"
-                      initial={{ opacity: 0 }} 
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       className="text-stone-400 text-[10px] font-bold uppercase italic"
                     >
-                      Nous n'avons pas encore de proverbe répertorié pour le {selectedCountry}. Soyez le premier à en ajouter un !
+                      Nous n'avons pas encore de proverbe répertorié pour ce pays. Soyez le premier à en ajouter un !
                     </motion.p>
                   )}
                 </AnimatePresence>
               </div>
-
               <div onClick={() => triggerLogin("Connecte-toi pour voter pour des proverbes !")} className="p-10 bg-brand-ink text-white border-3 border-brand-ink flex flex-col items-center text-center cursor-pointer hover:bg-stone-800 transition-all shadow-[8px_8px_0px_#B2513B]">
                   <Plus size={40} className="mb-4 text-brand-savannah" />
                   <h4 className="text-xs font-black uppercase tracking-widest leading-none">Ajouter une Sagesse</h4>
@@ -327,10 +335,12 @@ export default function App() {
           </div>
         </section>
 
+        {/* GENERATEUR */}
         <section id="generator" className="max-w-7xl mx-auto px-4 py-16">
           <VisualQuoteGenerator proverb={filteredProverbs[0] || MOCK_PROVERBS[0]} />
         </section>
 
+        {/* SECTION 4 : LE COIN DES ENFANTS */}
         <section id="kids" className="bg-brand-earth text-white py-16 overflow-hidden">
            <div className="max-w-7xl mx-auto px-4">
               <div className="grid lg:grid-cols-2 gap-16 items-center mb-12">
