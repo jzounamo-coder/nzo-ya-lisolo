@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "Proverb": {
+      "title": "Proverbe",
+      "description": "Une unité de sagesse africaine",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "description": "Le texte original du proverbe" },
+        "translation": { "type": "string", "description": "La traduction française" },
+        "explanation": { "type": "string", "description": "L'explication culturelle et le sens" },
+        "countryId": { "type": "string", "description": "L'ID du pays d'origine" },
+        "language": { "type": "string", "description": "La langue d'origine (Lingala, Swahili, etc.)" },
+        "themeId": { "type": "string", "description": "La catégorie thématique" },
+        "audioUrl": { "type": "string", "format": "uri", "description": "Lien vers le fichier audio" },
+        "likesCount": { "type": "number", "description": "Nombre de votes positifs" },
+        "isKidFriendly": { "type": "boolean", "description": "Si le proverbe est adapté aux enfants" },
+        "authorId": { "type": "string", "description": "UID de l'auteur si c'est une contribution" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "translation", "countryId", "language"]
+    },
+    "UserProfile": {
+      "title": "Profil Utilisateur",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "bio": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      }
+    },
+    "Theme": {
+      "title": "Thème",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "iconName": { "type": "string" }
+      }
+    },
+    "Favorite": {
+      "title": "Favori",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "proverbId": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/proverbs/{proverbId}": {
+      "schema": { "$ref": "Proverb" },
+      "description": "Collection globale des proverbes"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "UserProfile" },
+      "description": "Données des profils utilisateurs"
+    },
+    "/themes/{themeId}": {
+      "schema": { "$ref": "Theme" },
+      "description": "Catégories thématiques"
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": { "$ref": "Favorite" },
+      "description": "Proverbes favoris de l'utilisateur"
+    }
+  }
+}

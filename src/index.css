@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-serif: "Playfair Display", "Georgia", serif;
+
+  --color-brand-earth: #8B4513;
+  --color-brand-clay: #B2513B;
+  --color-brand-savannah: #E3A833;
+  --color-brand-jungle: #2D5A27;
+  --color-brand-ivory: #FDFCF0;
+  --color-brand-ink: #1A1A1A;
+  
+  --radius-xl: 0rem; /* Neobrutalist tend to be sharper */
+  --radius-2xl: 0rem;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-ivory text-brand-ink selection:bg-brand-savannah/30;
+    font-feature-settings: "cv11", "ss01";
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20l20-20M0 40L20 20M0 0l40 40' stroke='%23B2513B' stroke-width='1' fill='none' opacity='0.1'/%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  .brutal-border {
+    @apply border-3 border-brand-ink;
+  }
+  
+  .brutal-shadow {
+    @apply shadow-[4px_4px_0px_#1A1A1A];
+  }
+
+  .brutal-shadow-lg {
+    @apply shadow-[8px_8px_0px_#1A1A1A];
+  }
+
+  .brutal-shadow-jungle {
+    @apply shadow-[12px_12px_0px_#2D5A27];
+  }
+
+  .brutal-shadow-clay {
+    @apply shadow-[12px_12px_0px_#B2513B];
+  }
+
+  .brutal-shadow-savannah {
+    @apply shadow-[8px_8px_0px_#E3A833];
+  }
+
+  .brutal-shadow-savannah-lg {
+    @apply shadow-[12px_12px_0px_#E3A833];
+  }
+  
+  .glass-card {
+    @apply bg-white border-2 border-brand-ink;
+    box-shadow: 4px 4px 0px #1A1A1A;
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
