@@ -5,20 +5,27 @@
 
 import React, { useState, useRef } from 'react';
 import { Proverb } from '../types';
-import { Download, Share2, Palette, Wand2, Quote, RefreshCw } from 'lucide-react'; // Ajout de RefreshCw
+import { Download, Share2, Palette, Wand2, Quote, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { toPng } from 'html-to-image';
-import { MOCK_PROVERBS } from '../constants'; // Import de ta liste de proverbes
+import { MOCK_PROVERBS } from '../constants'; // Vérifie bien que ce chemin est correct
+
+const PATTERNS = [
+  { name: 'Bogolan', class: 'bg-[#2D1B14] text-[#F5F5F0] p-12 border-[10px] border-[#3D2C2E]' },
+  { name: 'Nuit à Kin', class: 'bg-[#0A1128] text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
+  { name: 'Terre Rouge', class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' },
+  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' },
+];
 
 export default function VisualQuoteGenerator({ proverb: initialProverb }: { proverb: Proverb }) {
   const [activePattern, setActivePattern] = useState(0);
-  // État pour gérer le proverbe actuel (commence par celui reçu en clic)
+  // On utilise un State pour le proverbe afin de pouvoir le changer
   const [currentProverb, setCurrentProverb] = useState<Proverb>(initialProverb);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // FONCTION : Générer un nouveau proverbe aléatoire
-  const handleRandomProverb = () => {
+  // FONCTION POUR CHANGER DE PROVERBE
+  const handleRandomize = () => {
     const randomIndex = Math.floor(Math.random() * MOCK_PROVERBS.length);
     setCurrentProverb(MOCK_PROVERBS[randomIndex]);
   };
@@ -32,7 +39,7 @@ export default function VisualQuoteGenerator({ proverb: initialProverb }: { prov
         style: { transform: 'scale(1)' }
       });
       const link = document.createElement('a');
-      link.download = `sagesse-${currentProverb.originCountryName || 'afrique'}.png`;
+      link.download = `sagesse-${currentProverb.originCountryName}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -54,28 +61,29 @@ export default function VisualQuoteGenerator({ proverb: initialProverb }: { prov
                     <Wand2 size={24} />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-serif font-black italic text-brand-earth tracking-tighter">Générateur</h3>
-                    <p className="text-brand-ink/70 text-[10px] font-black uppercase tracking-widest">Image unique instantanée.</p>
+                    <h3 className="text-2xl md:text-3xl font-serif font-black italic text-brand-earth tracking-tighter">Générateur</h3>
                 </div>
             </div>
-            
-            {/* BOUTON ALÉATOIRE */}
+
+            {/* LE BOUTON MAGIQUE EST ICI */}
             <button 
-              onClick={handleRandomProverb}
-              className="group flex items-center gap-2 bg-brand-ink text-white px-4 py-2 border-2 border-brand-ink hover:bg-brand-earth transition-colors brutal-shadow active:translate-y-1"
+              onClick={handleRandomize}
+              className="flex items-center gap-2 bg-brand-savannah text-brand-ink px-4 py-2 border-2 border-brand-ink font-black uppercase text-[10px] tracking-widest hover:translate-y-[-2px] transition-all brutal-shadow active:translate-y-[2px]"
             >
-              <RefreshCw size={18} className="group-active:rotate-180 transition-transform duration-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Autre Sagesse</span>
+              <RefreshCw size={16} />
+              Changer de citation
             </button>
         </div>
 
+        {/* L'image générée change maintenant dynamiquement */}
         <AnimatePresence mode="wait">
           <motion.div
             ref={cardRef}
-            key={`${currentProverb.id}-${activePattern}`} // Change quand le proverbe OU le style change
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            key={currentProverb.id}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.3 }}
             className={cn(
               "aspect-square border-3 border-brand-ink flex flex-col items-center justify-center text-center relative overflow-hidden shadow-[8px_8px_0px_#1A1A1A]",
               PATTERNS[activePattern].class
@@ -99,7 +107,6 @@ export default function VisualQuoteGenerator({ proverb: initialProverb }: { prov
         </AnimatePresence>
       </div>
 
-      {/* Reste du composant (Styles & Boutons Download) inchangé */}
       <div className="flex flex-col justify-center space-y-8">
         <div className="space-y-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink flex items-center gap-2 border-b-2 border-brand-ink pb-2">
@@ -129,7 +136,7 @@ export default function VisualQuoteGenerator({ proverb: initialProverb }: { prov
             onClick={handleDownload}
             className="w-full bg-brand-savannah text-brand-ink border-3 border-brand-ink py-5 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-yellow-400 transition-all shadow-[4px_4px_0px_#1A1A1A]"
           >
-            <Download size={20} /> Télécharger le PNG
+            <Download size={20} /> Télécharger
           </button>
           <button 
             onClick={handleWhatsAppShare}
@@ -142,10 +149,3 @@ export default function VisualQuoteGenerator({ proverb: initialProverb }: { prov
     </div>
   );
 }
-
-const PATTERNS = [
-  { name: 'Bogolan', class: 'bg-[#2D1B14] text-[#F5F5F0] p-12 border-[10px] border-[#3D2C2E]' },
-  { name: 'Nuit à Kin', class: 'bg-[#0A1128] text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
-  { name: 'Terre Rouge', class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' },
-  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' },
-];
