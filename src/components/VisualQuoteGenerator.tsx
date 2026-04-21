@@ -11,10 +11,22 @@ import { cn } from '../lib/utils';
 import { toPng } from 'html-to-image';
 
 const PATTERNS = [
-  { name: 'Bogolan', class: 'bg-stone-900 text-white p-12 border-4 border-stone-800' },
-  //{ name: 'Nuit à Kin', class: 'bg-brand-ink text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
-  { name: 'Terre Rouge', class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' },
-  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' },
+  { 
+    name: 'Bogolan', 
+    class: 'bg-[#2D1B14] text-[#F5F5F0] p-12 border-[10px] border-[#3D2C2E]' 
+  },
+  { 
+    name: 'Nuit à Kin', 
+    class: 'bg-[#0A1128] text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' 
+  },
+  { 
+    name: 'Terre Rouge', 
+    class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' 
+  },
+  { 
+    name: 'Kente', 
+    class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' 
+  },
 ];
 
 export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) {
