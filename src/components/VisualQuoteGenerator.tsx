@@ -12,8 +12,7 @@ import { toPng } from 'html-to-image';
 
 const PATTERNS = [
   { name: 'Bogolan', class: 'bg-stone-900 text-white p-12 border-4 border-stone-800' },
-  { name: 'Wax', class: 'bg-brand-primary text-white p-12 african-pattern-wax shadow-inner' },
-  //{ name: 'Earth', class: 'bg-[#3D2C2E] text-white p-12 font-serif' },
+  { name: 'Earth', class: 'bg-[#3D2C2E] text-white p-12 font-serif' },
   { name: 'Kente', class: 'bg-[#FF9F1C] text-stone-900 p-12 shadow-inner border-y-8 border-[#3D2C2E]' },
 ];
 
