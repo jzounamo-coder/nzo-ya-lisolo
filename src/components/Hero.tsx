@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Calendar, Quote, ChevronRight, Globe, Users } from 'lucide-react';
 import { motion } from 'motion/react';
+import { MOCK_PROVERBS } from '../constants'; // Importe ta liste de proverbes
 
 // On définit ce que le Hero a besoin de recevoir pour fonctionner
 interface HeroProps {
-  onRandom: () => void;      // Pour le bouton Aléatoire
-  onContribute: () => void;  // Pour le bouton Contribuer
-  onGenerate: () => void;    // Pour le générateur (scroll ou ouvrir l'outil)
-  onSelectTheme: (theme: string) => void; // Pour les thématiques à droite
+  onRandom: () => void;      
+  onContribute: () => void;  
+  onGenerate: () => void;    
+  onSelectTheme: (theme: string) => void; 
   selectedTheme?: string | null;
 }
 
 export default function Hero({ onRandom, onContribute, onGenerate, onSelectTheme, selectedTheme }: HeroProps) {
+  
+  // LOGIQUE : Sélectionner un proverbe unique pour chaque jour
+  const dailyProverb = useMemo(() => {
+    if (!MOCK_PROVERBS || MOCK_PROVERBS.length === 0) return null;
+    
+    // On récupère une valeur basée sur la date (ex: 20260421)
+    const today = new Date();
+    const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    
+    // On utilise le modulo pour piocher toujours le même index pour cette date
+    const dailyIndex = dateSeed % MOCK_PROVERBS.length;
+    return MOCK_PROVERBS[dailyIndex];
+  }, []);
+
+  if (!dailyProverb) return null;
+
   return (
     <section className="relative pt-32 pb-20 px-4 overflow-hidden">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
@@ -32,25 +49,29 @@ export default function Hero({ onRandom, onContribute, onGenerate, onSelectTheme
                 ▶
               </div>
               <div className="flex gap-2">
-                <span className="bg-brand-ivory border border-brand-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wider">Lingala</span>
-                <span className="bg-brand-ivory border border-brand-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wider">🇨🇬 Congo</span>
+                <span className="bg-brand-ivory border border-brand-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                  {dailyProverb.language}
+                </span>
+                <span className="bg-brand-ivory border border-brand-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                  🌍 {dailyProverb.originCountryName}
+                </span>
               </div>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-serif italic font-bold text-brand-earth leading-tight mb-4">
-              "Mwana ya nkoko te kozanga nzela."
+            <h2 className="text-3xl md:text-5xl font-serif italic font-bold text-brand-earth leading-tight mb-4">
+              "{dailyProverb.text}"
             </h2>
             
             <p className="text-xl md:text-2xl font-sans font-medium text-brand-ink/80 border-l-4 border-brand-savannah pl-6 mb-6">
-              L'enfant du vautour ne manque jamais de chemin.
+              {dailyProverb.translation}
             </p>
             
             <p className="text-sm text-stone-500 font-medium">
-              <span className="font-bold text-brand-ink uppercase text-[10px] tracking-widest">Explication :</span> La sagesse et les compétences sont transmises naturellement par l'héritage et l'observation.
+              <span className="font-bold text-brand-ink uppercase text-[10px] tracking-widest">Explication :</span> {dailyProverb.explanation}
             </p>
           </motion.div>
 
-          {/* Action Buttons Rendu Opérationnels */}
+          {/* Action Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button 
               onClick={onGenerate}
@@ -78,6 +99,7 @@ export default function Hero({ onRandom, onContribute, onGenerate, onSelectTheme
 
         {/* Sidebar Right Section */}
         <div className="sidebar flex flex-col gap-6">
+          {/* Statistiques (inchangées) */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink leading-none">Statistiques Vivantes</p>
@@ -101,6 +123,7 @@ export default function Hero({ onRandom, onContribute, onGenerate, onSelectTheme
             </div>
           </div>
 
+          {/* Thématiques (inchangées) */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink leading-none">Thématiques Populaires</p>

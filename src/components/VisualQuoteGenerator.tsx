@@ -20,7 +20,7 @@ const PATTERNS = [
 
 export default function VisualQuoteGenerator({ proverb: initialProverb }: { proverb: Proverb }) {
   const [activePattern, setActivePattern] = useState(0);
-  // On utilise un State pour le proverbe afin de pouvoir le changer
+  // On utilise un State pour le afin de pouvoir le changer
   const [currentProverb, setCurrentProverb] = useState<Proverb>(initialProverb);
   const cardRef = useRef<HTMLDivElement>(null);
 
