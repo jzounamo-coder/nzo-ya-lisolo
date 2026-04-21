@@ -12,11 +12,9 @@ import { toPng } from 'html-to-image';
 
 const PATTERNS = [
   { name: 'Bogolan', class: 'bg-stone-900 text-white p-12 border-4 border-stone-800' },
-  // Modification ici : Fond bleu profond au lieu de l'image de motif qui créait le bug blanc
-  { name: 'Royal Blue', class: 'bg-brand-ink text-brand-savannah p-12 shadow-inner border-8 border-brand-clay' },
-  { name: 'Earth', class: 'bg-[#3D2C2E] text-white p-12 font-serif' },
-  // Modification ici : Texte en blanc pour une meilleure lisibilité sur le orange
-  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-[#3D2C2E]' },
+  { name: 'Nuit à Kin', class: 'bg-brand-ink text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
+  { name: 'Terre Rouge', class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' },
+  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' },
 ];
 
 export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) {
@@ -29,7 +27,7 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
     try {
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        backgroundColor: '#1A1A1A', // Force un fond pour éviter la transparence blanche
+        backgroundColor: '#1A1A1A', 
         style: {
           transform: 'scale(1)',
         }
@@ -72,16 +70,17 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
             PATTERNS[activePattern].class
           )}
         >
-          <Quote size={48} className="opacity-20 mb-8" />
-          <h4 className="text-2xl md:text-4xl font-serif italic font-bold leading-tight mb-6 px-8">
+          <Quote size={48} className="opacity-20 mb-8 text-white" />
+          <h4 className="text-2xl md:text-3xl font-serif italic font-black leading-tight mb-6 px-8">
             {proverb.text}
           </h4>
-          <p className="text-lg opacity-80 mb-8 px-10 font-medium">
+          <div className="w-12 h-1 bg-current opacity-30 mb-6" />
+          <p className="text-lg opacity-90 mb-8 px-10 font-medium italic">
             {proverb.translation}
           </p>
           <div className="flex items-center gap-3 pt-6 border-t border-white/20">
-            <span className="text-2xl">🌍</span>
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Nzo ya Lisolo • {proverb.originCountryName}</span>
+            <span className="text-xl">🌍</span>
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Nzo ya Lisolo • {proverb.originCountryName}</span>
           </div>
         </motion.div>
       </div>
@@ -89,7 +88,7 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
       <div className="flex flex-col justify-center space-y-8">
         <div className="space-y-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink flex items-center gap-2 border-b-2 border-brand-ink pb-2">
-            <Palette size={14} /> Choisir un Style
+            <Palette size={14} /> Style de l'Affiche
           </p>
           <div className="grid grid-cols-2 gap-3">
             {PATTERNS.map((p, i) => (
@@ -99,11 +98,11 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
                 className={cn(
                   "p-4 border-2 transition-all text-left flex flex-col gap-2",
                   activePattern === i 
-                    ? "border-brand-ink bg-white shadow-[4px_4px_0px_#1A1A1A] translate-y-[-2px] translate-x-[-2px]" 
+                    ? "border-brand-ink bg-white shadow-[4px_4px_0px_#1A1A1A] translate-y-[-1px]" 
                     : "border-stone-200 bg-stone-50 hover:border-brand-ink"
                 )}
               >
-                <div className={cn("w-full h-8 border border-brand-ink", p.class)} />
+                <div className={cn("w-full h-8 border border-brand-ink/20", p.class)} />
                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-ink">{p.name}</span>
               </button>
             ))}
@@ -113,18 +112,18 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
         <div className="space-y-3 pt-4">
           <button 
             onClick={handleDownload}
-            className="w-full bg-brand-savannah text-brand-ink border-3 border-brand-ink py-5 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:translate-y-[-2px] transition-all shadow-[4px_4px_0px_#1A1A1A] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]"
+            className="w-full bg-brand-savannah text-brand-ink border-3 border-brand-ink py-5 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-yellow-400 transition-all shadow-[4px_4px_0px_#1A1A1A] active:shadow-none active:translate-y-[2px]"
           >
             <Download size={20} />
-            Télécharger l'image
+            Télécharger le PNG
           </button>
           
           <button 
             onClick={handleWhatsAppShare}
-            className="w-full bg-brand-clay text-white border-3 border-brand-ink py-5 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:translate-y-[-2px] transition-all shadow-[4px_4px_0px_#1A1A1A] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]"
+            className="w-full bg-white text-brand-ink border-3 border-brand-ink py-5 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-stone-50 transition-all shadow-[4px_4px_0px_#1A1A1A] active:shadow-none active:translate-y-[2px]"
           >
             <Share2 size={20} />
-            WhatsApp
+            Partager sur WhatsApp
           </button>
         </div>
       </div>
