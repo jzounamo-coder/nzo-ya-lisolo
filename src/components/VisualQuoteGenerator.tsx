@@ -12,7 +12,7 @@ import { toPng } from 'html-to-image';
 
 const PATTERNS = [
   { name: 'Bogolan', class: 'bg-stone-900 text-white p-12 border-4 border-stone-800' },
-  { name: 'Nuit à Kin', class: 'bg-brand-ink text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
+  //{ name: 'Nuit à Kin', class: 'bg-brand-ink text-brand-savannah p-12 border-8 border-brand-clay shadow-inner' },
   { name: 'Terre Rouge', class: 'bg-brand-clay text-white p-12 border-4 border-brand-ink' },
   { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-brand-ink' },
 ];
