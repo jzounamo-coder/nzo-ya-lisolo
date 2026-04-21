@@ -12,22 +12,24 @@ import { toPng } from 'html-to-image';
 
 const PATTERNS = [
   { name: 'Bogolan', class: 'bg-stone-900 text-white p-12 border-4 border-stone-800' },
+  // Modification ici : Fond bleu profond au lieu de l'image de motif qui créait le bug blanc
+  { name: 'Royal Blue', class: 'bg-brand-ink text-brand-savannah p-12 shadow-inner border-8 border-brand-clay' },
   { name: 'Earth', class: 'bg-[#3D2C2E] text-white p-12 font-serif' },
-  { name: 'Kente', class: 'bg-[#FF9F1C] text-stone-900 p-12 shadow-inner border-y-8 border-[#3D2C2E]' },
+  // Modification ici : Texte en blanc pour une meilleure lisibilité sur le orange
+  { name: 'Kente', class: 'bg-[#FF9F1C] text-white p-12 shadow-inner border-y-8 border-[#3D2C2E]' },
 ];
 
 export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) {
   const [activePattern, setActivePattern] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // FONCTION : TÉLÉCHARGER L'IMAGE
   const handleDownload = async () => {
     if (cardRef.current === null) return;
     
     try {
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        // On s'assure que les polices et couleurs sont bien capturées
+        backgroundColor: '#1A1A1A', // Force un fond pour éviter la transparence blanche
         style: {
           transform: 'scale(1)',
         }
@@ -41,7 +43,6 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
     }
   };
 
-  // FONCTION : PARTAGER SUR WHATSAPP
   const handleWhatsAppShare = () => {
     const message = `✨ *Sagesse d'Afrique* ✨\n\n"${proverb.text}"\n\n_Sens : ${proverb.translation}_\n\n🌍 Origine : ${proverb.originCountryName}\n\nDécouvre plus de sagesses sur Nzo ya Lisolo !`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
@@ -50,7 +51,6 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
 
   return (
     <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-12 bg-white border-3 border-brand-ink p-8 lg:p-12 shadow-[12px_12px_0px_#1A1A1A] overflow-hidden">
-      {/* Preview Section */}
       <div className="space-y-8">
         <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-brand-clay border-2 border-brand-ink flex items-center justify-center text-white brutal-shadow">
@@ -62,7 +62,6 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
             </div>
         </div>
 
-        {/* Bloc capturé par la référence cardRef */}
         <motion.div
           ref={cardRef}
           key={activePattern}
@@ -74,24 +73,23 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
           )}
         >
           <Quote size={48} className="opacity-20 mb-8" />
-          <h4 className="text-3xl md:text-5xl font-serif italic font-bold leading-tight mb-6 px-8">
+          <h4 className="text-2xl md:text-4xl font-serif italic font-bold leading-tight mb-6 px-8">
             {proverb.text}
           </h4>
           <p className="text-lg opacity-80 mb-8 px-10 font-medium">
             {proverb.translation}
           </p>
           <div className="flex items-center gap-3 pt-6 border-t border-white/20">
-            <span className="text-2xl">{proverb.originCountryName === 'République Démocratique du Congo' ? '🇨🇩' : '🌍'}</span>
+            <span className="text-2xl">🌍</span>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Nzo ya Lisolo • {proverb.originCountryName}</span>
           </div>
         </motion.div>
       </div>
 
-      {/* Controls Section */}
       <div className="flex flex-col justify-center space-y-8">
         <div className="space-y-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink flex items-center gap-2 border-b-2 border-brand-ink pb-2">
-            <Palette size={14} /> Choisir un Motif
+            <Palette size={14} /> Choisir un Style
           </p>
           <div className="grid grid-cols-2 gap-3">
             {PATTERNS.map((p, i) => (
@@ -105,7 +103,7 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
                     : "border-stone-200 bg-stone-50 hover:border-brand-ink"
                 )}
               >
-                <div className={cn("w-full h-12 border border-brand-ink", p.class)} />
+                <div className={cn("w-full h-8 border border-brand-ink", p.class)} />
                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-ink">{p.name}</span>
               </button>
             ))}
@@ -129,10 +127,6 @@ export default function VisualQuoteGenerator({ proverb }: { proverb: Proverb }) 
             WhatsApp
           </button>
         </div>
-
-        <p className="text-[10px] text-stone-400 text-center uppercase font-bold tracking-widest pt-4">
-          Un design inspiré des textiles africains traditionnels
-        </p>
       </div>
     </div>
   );
